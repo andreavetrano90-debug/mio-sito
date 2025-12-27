@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Andrea Vetrano — Visual Auteur</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --noir: #0a0a0a;
+            --charcoal: #141414;
+            --platinum: #e8e6e3;
+            --silver: #9a9892;
+            --champagne: #c9b896;
+            --ivory: #f5f3ef;
+            --transition-luxe: cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Jost', sans-serif;
+            background: var(--noir);
+            color: var(--platinum);
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+        ::selection { background: var(--champagne); color: var(--noir); }
+
+        .cursor { width: 20px; height: 20px; border: 1px solid var(--champagne); border-radius: 50%; position: fixed; pointer-events: none; z-index: 99999; transition: transform 0.15s ease; mix-blend-mode: difference; }
+        .cursor-dot { width: 4px; height: 4px; background: var(--champagne); border-radius: 50%; position: fixed; pointer-events: none; z-index: 99999; }
+        .cursor.hover { transform: scale(2.5); }
+
+        .grain { position: fixed; top: -50%; left: -50%; width: 200%; height: 200%; pointer-events: none; z-index: 99998; opacity: 0.025; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); animation: grain 8s steps(10) infinite; }
+        @keyframes grain { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-5%, -10%); } }
+
+        header { position: fixed; top: 0; width: 100%; padding: 55px 80px; z-index: 9999; display: flex; justify-content: space-between; align-items: center; mix-blend-mode: difference; }
+        .logo { font-family: 'Libre Baskerville', serif; font-size: 11px; letter-spacing: 0.4em; text-transform: uppercase; color: var(--ivory); }
+        .logo span { opacity: 0.4; }
+        nav { display: flex; gap: 60px; }
+        nav a { color: var(--ivory); text-decoration: none; font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; font-weight: 300; position: relative; }
+        nav a::after { content: ''; position: absolute; bottom: -5px; left: 0; width: 0; height: 1px; background: var(--champagne); transition: width 0.5s var(--transition-luxe); }
+        nav a:hover::after { width: 100%; }
+
+        .hero { height: 100vh; min-height: 900px; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .hero-background { position: absolute; inset: 0; }
+        .hero-video { width: 100%; height: 100%; object-fit: cover; opacity: 0.18; filter: grayscale(100%) contrast(1.15) brightness(0.9); }
+        .hero-gradient { position: absolute; inset: 0; background: radial-gradient(ellipse 80% 60% at 50% 50%, transparent 0%, var(--noir) 70%); }
+        .hero-content { position: relative; z-index: 10; text-align: center; padding: 0 50px; max-width: 1400px; }
+        .hero-title { margin-bottom: 55px; }
+        .hero-title-name { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .hero-title-first, .hero-title-last { display: block; font-family: 'Jost', sans-serif; font-size: clamp(42px, 9vw, 130px); font-weight: 200; letter-spacing: 0.35em; text-transform: uppercase; line-height: 1; color: var(--ivory); opacity: 0; transform: translateY(30px); }
+        .hero-title-first { animation: revealTitle 1.4s var(--transition-luxe) 0.3s forwards; }
+        .hero-title-last { color: var(--champagne); animation: revealTitle 1.4s var(--transition-luxe) 0.5s forwards; }
+        @keyframes revealTitle { to { opacity: 1; transform: translateY(0); } }
+        .hero-title-divider { width: 1px; height: 40px; background: var(--champagne); margin: 25px auto; opacity: 0; transform: scaleY(0); animation: revealLine 1s var(--transition-luxe) 0.8s forwards; }
+        @keyframes revealLine { to { opacity: 0.3; transform: scaleY(1); } }
+        .hero-title-tagline { font-family: 'Jost', sans-serif; font-size: 10px; letter-spacing: 0.5em; text-transform: uppercase; color: var(--silver); font-weight: 300; opacity: 0; animation: revealUp 1.2s var(--transition-luxe) 1s forwards; }
+        @keyframes revealUp { to { opacity: 1; transform: translateY(0); } }
+        .hero-subtitle { font-family: 'Libre Baskerville', serif; font-size: clamp(14px, 1.5vw, 18px); color: var(--silver); line-height: 1.8; max-width: 600px; margin: 0 auto 70px; opacity: 0; transform: translateY(30px); animation: revealUp 1.4s var(--transition-luxe) 1.2s forwards; }
+        .hero-cta { opacity: 0; transform: translateY(20px); animation: revealUp 1.2s var(--transition-luxe) 1.4s forwards; }
+        .btn-primary { display: inline-flex; align-items: center; gap: 20px; padding: 22px 55px; background: transparent; border: 1px solid rgba(201, 184, 150, 0.25); color: var(--champagne); text-decoration: none; font-size: 10px; letter-spacing: 0.4em; text-transform: uppercase; font-weight: 300; transition: all 0.6s var(--transition-luxe); position: relative; overflow: hidden; }
+        .btn-primary::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--champagne); transform: translateY(100%); transition: transform 0.6s var(--transition-luxe); }
+        .btn-primary span { position: relative; z-index: 1; transition: color 0.4s ease; }
+        .btn-primary:hover { border-color: var(--champagne); }
+        .btn-primary:hover::before { transform: translateY(0); }
+        .btn-primary:hover span { color: var(--noir); }
+        .btn-primary svg { width: 20px; height: 20px; stroke: currentColor; stroke-width: 1; fill: none; position: relative; z-index: 1; transition: transform 0.4s var(--transition-luxe); }
+        .btn-primary:hover svg { transform: translateX(5px); stroke: var(--noir); }
+        .scroll-indicator { position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 15px; opacity: 0; animation: revealUp 1.2s var(--transition-luxe) 1.6s forwards; }
+        .scroll-text { font-size: 8px; letter-spacing: 0.4em; text-transform: uppercase; color: var(--silver); writing-mode: vertical-rl; transform: rotate(180deg); }
+        .scroll-line { width: 1px; height: 60px; background: linear-gradient(180deg, var(--champagne), transparent); }
+
+        .manifesto { padding: 200px 80px; background: var(--noir); }
+        .manifesto-container { max-width: 1000px; margin: 0 auto; text-align: center; }
+        .manifesto-quote { font-family: 'Playfair Display', serif; font-size: clamp(28px, 4vw, 48px); font-weight: 400; font-style: italic; line-height: 1.6; color: var(--platinum); margin-bottom: 50px; }
+        .manifesto-quote span { color: var(--champagne); }
+        .manifesto-attribution { font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--silver); font-weight: 300; }
+        .manifesto-line { width: 80px; height: 1px; background: var(--champagne); margin: 40px auto 0; opacity: 0.3; }
+
+        .about { min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; background: var(--noir); }
+        .about-visual { position: relative; overflow: hidden; }
+        .about-image { width: 100%; height: 100%; object-fit: cover; filter: grayscale(100%) contrast(1.1); transition: filter 1.2s var(--transition-luxe); }
+        .about-visual:hover .about-image { filter: grayscale(0%) contrast(1.05); }
+        .about-image-frame { position: absolute; inset: 40px; border: 1px solid rgba(201, 184, 150, 0.2); pointer-events: none; }
+        .about-image-overlay { position: absolute; inset: 0; background: linear-gradient(90deg, transparent 70%, var(--noir) 100%); }
+        .about-content { display: flex; flex-direction: column; justify-content: center; padding: 100px 120px; }
+        .section-label { display: flex; align-items: center; gap: 20px; margin-bottom: 50px; }
+        .section-label::before { content: ''; width: 40px; height: 1px; background: var(--champagne); }
+        .section-label span { font-size: 10px; letter-spacing: 0.4em; text-transform: uppercase; color: var(--champagne); font-weight: 300; }
+        .about-title { font-family: 'Playfair Display', serif; font-size: clamp(36px, 4vw, 56px); font-weight: 400; line-height: 1.3; color: var(--ivory); margin-bottom: 50px; }
+        .about-title em { font-style: italic; color: var(--champagne); }
+        .about-text { font-size: 15px; line-height: 2; color: var(--silver); margin-bottom: 30px; font-weight: 300; }
+        .about-signature { margin-top: 50px; }
+        .signature-text { font-family: 'Playfair Display', serif; font-size: 24px; font-style: italic; color: var(--champagne); opacity: 0.7; }
+
+        .portfolio { padding: 180px 80px; background: var(--charcoal); }
+        .portfolio-header { max-width: 1600px; margin: 0 auto 100px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .portfolio-title-group { max-width: 600px; }
+        .section-title { font-family: 'Playfair Display', serif; font-size: clamp(42px, 5vw, 72px); font-weight: 400; color: var(--ivory); line-height: 1.1; }
+        .section-title em { font-style: italic; color: var(--champagne); }
+        .portfolio-description { font-size: 14px; color: var(--silver); line-height: 1.8; max-width: 400px; font-weight: 300; }
+        .portfolio-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 30px; max-width: 1600px; margin: 0 auto; }
+        .portfolio-item { position: relative; overflow: hidden; cursor: pointer; background: var(--charcoal); }
+        .portfolio-item:nth-child(1) { grid-column: span 7; aspect-ratio: 16/10; }
+        .portfolio-item:nth-child(2) { grid-column: span 5; aspect-ratio: 4/5; }
+        .portfolio-item:nth-child(3) { grid-column: span 5; aspect-ratio: 4/5; }
+        .portfolio-item:nth-child(4) { grid-column: span 7; aspect-ratio: 16/10; }
+        .portfolio-item img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(80%) contrast(1.05); transition: all 1s var(--transition-luxe); transform: scale(1.02); display: block; }
+        .portfolio-item:hover img { filter: grayscale(0%) contrast(1.1); transform: scale(1.08); }
+        .portfolio-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 30%, rgba(10, 10, 10, 0.95) 100%); opacity: 0; transition: opacity 0.6s ease; display: flex; flex-direction: column; justify-content: flex-end; padding: 50px; }
+        .portfolio-item:hover .portfolio-overlay { opacity: 1; }
+        .portfolio-meta { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+        .portfolio-number { font-family: 'Playfair Display', serif; font-size: 12px; color: var(--champagne); font-style: italic; }
+        .portfolio-divider { width: 30px; height: 1px; background: rgba(201, 184, 150, 0.4); }
+        .portfolio-category { font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--silver); font-weight: 300; }
+        .portfolio-name { font-family: 'Playfair Display', serif; font-size: clamp(24px, 2.5vw, 36px); font-weight: 400; color: var(--ivory); line-height: 1.2; }
+        .portfolio-location { font-size: 13px; color: var(--silver); margin-top: 10px; font-weight: 300; }
+        .portfolio-frame { position: absolute; inset: 20px; border: 1px solid transparent; transition: all 0.6s var(--transition-luxe); pointer-events: none; }
+        .portfolio-item:hover .portfolio-frame { border-color: rgba(201, 184, 150, 0.3); inset: 25px; }
+
+        .services { padding: 180px 80px; background: var(--noir); border-top: 1px solid rgba(201, 184, 150, 0.08); }
+        .services-container { max-width: 1600px; margin: 0 auto; }
+        .services-header { margin-bottom: 100px; }
+        .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid rgba(201, 184, 150, 0.15); border-left: 1px solid rgba(201, 184, 150, 0.15); }
+        .service-item { padding: 70px 50px; border-right: 1px solid rgba(201, 184, 150, 0.15); border-bottom: 1px solid rgba(201, 184, 150, 0.15); transition: all 0.6s var(--transition-luxe); position: relative; }
+        .service-item::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: var(--champagne); transform: scaleX(0); transform-origin: left; transition: transform 0.6s var(--transition-luxe); }
+        .service-item:hover::before { transform: scaleX(1); }
+        .service-item:hover { background: rgba(201, 184, 150, 0.03); }
+        .service-number { font-family: 'Playfair Display', serif; font-size: 14px; font-style: italic; color: var(--champagne); margin-bottom: 35px; }
+        .service-title { font-family: 'Playfair Display', serif; font-size: clamp(24px, 2vw, 32px); font-weight: 400; color: var(--ivory); margin-bottom: 25px; line-height: 1.3; }
+        .service-description { font-size: 14px; line-height: 1.9; color: var(--silver); font-weight: 300; }
+
+        .credentials { padding: 180px 80px; background: var(--charcoal); }
+        .credentials-container { max-width: 1600px; margin: 0 auto; display: grid; grid-template-columns: 1fr 2fr; gap: 100px; align-items: center; }
+        .credentials-content { padding-right: 50px; }
+        .credentials-title { font-family: 'Playfair Display', serif; font-size: clamp(36px, 4vw, 52px); font-weight: 400; color: var(--ivory); line-height: 1.3; margin-bottom: 30px; }
+        .credentials-text { font-size: 15px; line-height: 1.9; color: var(--silver); font-weight: 300; }
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); border: 1px solid rgba(201, 184, 150, 0.15); }
+        .stat-item { padding: 60px 50px; border-right: 1px solid rgba(201, 184, 150, 0.15); border-bottom: 1px solid rgba(201, 184, 150, 0.15); text-align: center; transition: all 0.5s ease; }
+        .stat-item:nth-child(2), .stat-item:nth-child(4) { border-right: none; }
+        .stat-item:nth-child(3), .stat-item:nth-child(4) { border-bottom: none; }
+        .stat-item:hover { background: rgba(201, 184, 150, 0.03); }
+        .stat-number { font-family: 'Playfair Display', serif; font-size: clamp(48px, 5vw, 72px); font-weight: 400; color: var(--champagne); line-height: 1; margin-bottom: 15px; }
+        .stat-number sup { font-size: 0.4em; vertical-align: super; }
+        .stat-label { font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--silver); font-weight: 300; }
+
+        .clients { padding: 140px 80px; background: var(--noir); border-top: 1px solid rgba(201, 184, 150, 0.08); }
+        .clients-container { max-width: 1400px; margin: 0 auto; text-align: center; }
+        .clients-label { font-size: 9px; letter-spacing: 0.4em; text-transform: uppercase; color: var(--silver); margin-bottom: 60px; font-weight: 300; }
+        .clients-logos { display: flex; justify-content: center; align-items: center; gap: 80px; flex-wrap: wrap; opacity: 0.4; }
+        .client-logo { font-family: 'Libre Baskerville', serif; font-size: 14px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--platinum); }
+
+        .testimonials { padding: 180px 80px; background: var(--noir); border-top: 1px solid rgba(201, 184, 150, 0.08); }
+        .testimonials-container { max-width: 1400px; margin: 0 auto; }
+        .testimonials-header { text-align: center; margin-bottom: 80px; }
+        .testimonials-header .section-label { justify-content: center; }
+        .testimonials-header .section-label::before { display: none; }
+        .testimonials-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 50px; }
+        .testimonial-item { padding: 50px; border: 1px solid rgba(201, 184, 150, 0.12); transition: all 0.5s var(--transition-luxe); }
+        .testimonial-item:hover { background: rgba(201, 184, 150, 0.03); border-color: rgba(201, 184, 150, 0.25); }
+        .testimonial-quote { font-family: 'Libre Baskerville', serif; font-size: 15px; font-style: italic; line-height: 1.9; color: var(--platinum); margin-bottom: 30px; }
+        .testimonial-author { border-top: 1px solid rgba(201, 184, 150, 0.15); padding-top: 20px; }
+        .author-name { display: block; font-family: 'Playfair Display', serif; font-size: 16px; color: var(--champagne); margin-bottom: 5px; }
+        .author-title { display: block; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--silver); font-weight: 300; }
+
+        .press { padding: 180px 80px; background: var(--charcoal); }
+        .press-container { max-width: 1400px; margin: 0 auto; }
+        .press-header { text-align: center; margin-bottom: 80px; }
+        .press-header .section-label { justify-content: center; }
+        .press-header .section-label::before { display: none; }
+        .press-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 50px; }
+        .press-item { display: block; padding: 50px; border: 1px solid rgba(201, 184, 150, 0.12); transition: all 0.5s var(--transition-luxe); text-decoration: none; }
+        .press-item:hover { background: rgba(201, 184, 150, 0.03); border-color: rgba(201, 184, 150, 0.25); transform: translateY(-5px); }
+        .press-logo { display: block; font-family: 'Playfair Display', serif; font-size: 18px; font-style: italic; color: var(--champagne); margin-bottom: 20px; }
+        .press-quote { font-size: 14px; line-height: 1.8; color: var(--silver); font-weight: 300; }
+
+        .contact { padding: 200px 80px; background: var(--noir); text-align: center; position: relative; }
+        .contact::before { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 800px; height: 800px; background: radial-gradient(circle, rgba(201, 184, 150, 0.03) 0%, transparent 70%); pointer-events: none; }
+        .contact-content { position: relative; z-index: 1; max-width: 700px; margin: 0 auto; }
+        .contact-title { font-family: 'Playfair Display', serif; font-size: clamp(42px, 6vw, 80px); font-weight: 400; color: var(--ivory); line-height: 1.2; margin-bottom: 40px; }
+        .contact-title em { font-style: italic; color: var(--champagne); }
+        .contact-subtitle { font-size: 15px; color: var(--silver); line-height: 1.9; margin-bottom: 70px; font-weight: 300; }
+
+        .contact-form { text-align: left; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
+        .form-group { position: relative; }
+        .form-group.full { grid-column: span 2; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 20px 0; background: transparent; border: none; border-bottom: 1px solid rgba(201, 184, 150, 0.2);
+            font-family: 'Jost', sans-serif; font-size: 14px; font-weight: 300; color: var(--platinum);
+            transition: border-color 0.4s ease; outline: none;
+        }
+        .form-group textarea { resize: none; min-height: 120px; }
+        .form-group select { cursor: pointer; -webkit-appearance: none; -moz-appearance: none; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23c9b896' stroke-width='1'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0 center; }
+        .form-group select option { background: var(--noir); color: var(--platinum); }
+        .form-group label {
+            position: absolute; left: 0; top: 20px;
+            font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--silver); font-weight: 300;
+            transition: all 0.3s ease; pointer-events: none;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--champagne); }
+        .form-group input:focus + label, .form-group input:valid + label,
+        .form-group select:focus + label, .form-group select:valid + label,
+        .form-group textarea:focus + label, .form-group textarea:valid + label { top: -5px; font-size: 9px; color: var(--champagne); }
+
+        .btn-submit {
+            display: inline-flex; align-items: center; gap: 20px; padding: 22px 55px; margin-top: 40px;
+            background: transparent; border: 1px solid rgba(201, 184, 150, 0.25); color: var(--champagne);
+            font-family: 'Jost', sans-serif; font-size: 10px; letter-spacing: 0.4em; text-transform: uppercase; font-weight: 300;
+            cursor: pointer; transition: all 0.6s var(--transition-luxe); position: relative; overflow: hidden;
+        }
+        .btn-submit::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--champagne); transform: translateY(100%); transition: transform 0.6s var(--transition-luxe); }
+        .btn-submit span { position: relative; z-index: 1; transition: color 0.4s ease; }
+        .btn-submit:hover { border-color: var(--champagne); }
+        .btn-submit:hover::before { transform: translateY(0); }
+        .btn-submit:hover span { color: var(--noir); }
+        .btn-submit svg { width: 20px; height: 20px; stroke: currentColor; stroke-width: 1; fill: none; position: relative; z-index: 1; transition: all 0.4s var(--transition-luxe); }
+        .btn-submit:hover svg { transform: translateX(5px); stroke: var(--noir); }
+
+        .form-success { display: none; text-align: center; padding: 60px 0; }
+        .form-success.show { display: block; }
+        .form-success h3 { font-family: 'Playfair Display', serif; font-size: 32px; color: var(--champagne); margin-bottom: 20px; }
+        .form-success p { color: var(--silver); font-weight: 300; }
+
+        footer { padding: 60px 80px; background: var(--noir); border-top: 1px solid rgba(201, 184, 150, 0.08); display: flex; justify-content: space-between; align-items: center; }
+        .footer-left { font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--silver); font-weight: 300; }
+        .footer-right { display: flex; gap: 40px; }
+        .footer-link { font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--silver); text-decoration: none; font-weight: 300; transition: color 0.3s ease; }
+        .footer-link:hover { color: var(--champagne); }
+
+        .reveal { opacity: 0; transform: translateY(50px); transition: opacity 1.2s var(--transition-luxe), transform 1.2s var(--transition-luxe); }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+
+        /* Lightbox */
+        .lightbox { position: fixed; inset: 0; background: rgba(10, 10, 10, 0.98); z-index: 100000; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: all 0.5s var(--transition-luxe); }
+        .lightbox.active { opacity: 1; visibility: visible; }
+        .lightbox-close { position: absolute; top: 40px; right: 50px; background: none; border: none; color: var(--platinum); font-size: 32px; cursor: pointer; transition: color 0.3s ease; z-index: 10; }
+        .lightbox-close:hover { color: var(--champagne); }
+        .lightbox-content { width: 100%; max-width: 1400px; height: 100%; max-height: 90vh; padding: 40px; display: flex; flex-direction: column; }
+        .lightbox-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-shrink: 0; }
+        .lightbox-title { font-family: 'Playfair Display', serif; font-size: 28px; color: var(--ivory); }
+        .lightbox-counter { font-size: 12px; letter-spacing: 0.3em; color: var(--silver); }
+        .lightbox-gallery { display: flex; align-items: center; gap: 30px; flex: 1; min-height: 0; }
+        .lightbox-arrow { background: none; border: 1px solid rgba(201, 184, 150, 0.3); width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.4s ease; flex-shrink: 0; }
+        .lightbox-arrow:hover { background: var(--champagne); border-color: var(--champagne); }
+        .lightbox-arrow svg { width: 24px; height: 24px; stroke: var(--platinum); stroke-width: 1; fill: none; transition: stroke 0.3s ease; }
+        .lightbox-arrow:hover svg { stroke: var(--noir); }
+        .lightbox-image-container { flex: 1; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .lightbox-image { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; opacity: 0; transition: opacity 0.4s ease; }
+        .lightbox-image.loaded { opacity: 1; }
+        .lightbox-thumbnails { display: flex; justify-content: center; gap: 15px; margin-top: 30px; flex-shrink: 0; }
+        .lightbox-thumb { width: 100px; height: 70px; object-fit: cover; cursor: pointer; opacity: 0.4; transition: all 0.3s ease; border: 2px solid transparent; }
+        .lightbox-thumb:hover, .lightbox-thumb.active { opacity: 1; border-color: var(--champagne); }
+
+        @media (max-width: 1200px) {
+            .about { grid-template-columns: 1fr; }
+            .about-visual { height: 70vh; }
+            .about-content { padding: 80px 60px; }
+            .credentials-container { grid-template-columns: 1fr; gap: 60px; }
+            .portfolio-grid { grid-template-columns: 1fr; }
+            .portfolio-item:nth-child(1), .portfolio-item:nth-child(2), .portfolio-item:nth-child(3), .portfolio-item:nth-child(4) { grid-column: span 1; aspect-ratio: 16/10; }
+        }
+        @media (max-width: 768px) {
+            header { padding: 35px 40px; }
+            nav { gap: 35px; }
+            .hero-content { padding: 0 30px; }
+            .manifesto, .portfolio, .services, .credentials, .clients, .testimonials, .press, .contact { padding: 120px 40px; }
+            .services-grid, .stats-grid, .press-grid, .testimonials-grid { grid-template-columns: 1fr; }
+            .form-row { grid-template-columns: 1fr; }
+            .form-group.full { grid-column: span 1; }
+            .service-item, .stat-item { border-right: none; }
+            footer { flex-direction: column; gap: 30px; text-align: center; }
+            .cursor, .cursor-dot { display: none; }
+            .lightbox-content { padding: 20px; }
+            .lightbox-arrow { width: 44px; height: 44px; }
+            .lightbox-thumb { width: 60px; height: 45px; }
+            .lightbox-header { flex-direction: column; gap: 10px; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+    <div class="cursor"></div>
+    <div class="cursor-dot"></div>
+    <div class="grain"></div>
+
+    <header>
+        <div class="logo">Andrea <span>Vetrano</span></div>
+        <nav>
+            <a href="#portfolio">Portfolio</a>
+            <a href="#about">About</a>
+            <a href="#contact">Inquire</a>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <div class="hero-background">
+            <video class="hero-video" autoplay loop muted playsinline>
+                <source src="/assets/hero-texture.mp4" type="video/mp4">
+            </video>
+            <div class="hero-gradient"></div>
+        </div>
+        <div class="hero-content">
+            <div class="hero-title">
+                <h1 class="hero-title-name">
+                    <span class="hero-title-first">Andrea</span>
+                    <span class="hero-title-last">Vetrano</span>
+                </h1>
+                <div class="hero-title-divider"></div>
+                <p class="hero-title-tagline">Visual Auteur</p>
+            </div>
+            <p class="hero-subtitle">Where the extraordinary finds its voice.</p>
+            <div class="hero-cta">
+                <a href="#contact" class="btn-primary">
+                    <span>Inquire</span>
+                    <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </a>
+            </div>
+        </div>
+        <div class="scroll-indicator">
+            <span class="scroll-text">Scroll</span>
+            <div class="scroll-line"></div>
+        </div>
+    </section>
+
+    <section class="manifesto">
+        <div class="manifesto-container reveal">
+            <blockquote class="manifesto-quote">"Content is everywhere. <span>Resonance</span> is rare."</blockquote>
+            <p class="manifesto-attribution">— Andrea Vetrano</p>
+            <div class="manifesto-line"></div>
+        </div>
+    </section>
+
+    <section class="about" id="about">
+        <div class="about-visual">
+            <img src="/assets/andrea-portrait.jpg" alt="Andrea Vetrano" class="about-image">
+            <div class="about-image-frame"></div>
+            <div class="about-image-overlay"></div>
+        </div>
+        <div class="about-content">
+            <div class="section-label"><span>The Vision</span></div>
+            <h2 class="about-title">Crafting content for brands that demand <em>extraordinary</em></h2>
+            <p class="about-text">For over a decade, I have partnered with iconic brands to create visual content that doesn't just capture attention—it commands it.</p>
+            <p class="about-text">From global campaigns to intimate brand stories, my work bridges strategy and aesthetics. Every frame, every edit, every detail serves a purpose.</p>
+            <p class="about-text">I work with a select number of clients each year. Quality over quantity. Always.</p>
+            <div class="about-signature"><span class="signature-text">Andrea Vetrano</span></div>
+        </div>
+    </section>
+
+    <section class="portfolio" id="portfolio">
+        <div class="portfolio-header reveal">
+            <div class="portfolio-title-group">
+                <div class="section-label"><span>Selected Works</span></div>
+                <h2 class="section-title">A Curated <em>Collection</em></h2>
+            </div>
+            <p class="portfolio-description">A selection of projects across industries. Each one a collaboration with brands that understand the power of exceptional content.</p>
+        </div>
+        <div class="portfolio-grid">
+            <div class="portfolio-item reveal">
+                <img src="/assets/work-01.jpg" alt="Aston Martin">
+                <div class="portfolio-overlay">
+                    <div class="portfolio-meta">
+                        <span class="portfolio-number">I</span>
+                        <span class="portfolio-divider"></span>
+                        <span class="portfolio-category">Brand Campaign</span>
+                    </div>
+                    <h3 class="portfolio-name">Aston Martin</h3>
+                    <p class="portfolio-location">Luxury Automotive</p>
+                </div>
+                <div class="portfolio-frame"></div>
+            </div>
+            <div class="portfolio-item reveal">
+                <img src="/assets/work-02.jpg" alt="Palazzo Avino">
+                <div class="portfolio-overlay">
+                    <div class="portfolio-meta">
+                        <span class="portfolio-number">II</span>
+                        <span class="portfolio-divider"></span>
+                        <span class="portfolio-category">Visual Identity</span>
+                    </div>
+                    <h3 class="portfolio-name">Palazzo Avino</h3>
+                    <p class="portfolio-location">Luxury Hospitality</p>
+                </div>
+                <div class="portfolio-frame"></div>
+            </div>
+            <div class="portfolio-item reveal">
+                <img src="/assets/work-03.jpg" alt="Bvlgari">
+                <div class="portfolio-overlay">
+                    <div class="portfolio-meta">
+                        <span class="portfolio-number">III</span>
+                        <span class="portfolio-divider"></span>
+                        <span class="portfolio-category">Content Strategy</span>
+                    </div>
+                    <h3 class="portfolio-name">Bvlgari</h3>
+                    <p class="portfolio-location">Luxury Hotels</p>
+                </div>
+                <div class="portfolio-frame"></div>
+            </div>
+            <div class="portfolio-item reveal">
+                <img src="/assets/work-04.jpg" alt="Aman">
+                <div class="portfolio-overlay">
+                    <div class="portfolio-meta">
+                        <span class="portfolio-number">IV</span>
+                        <span class="portfolio-divider"></span>
+                        <span class="portfolio-category">Film & Motion</span>
+                    </div>
+                    <h3 class="portfolio-name">Aman</h3>
+                    <p class="portfolio-location">Luxury Resorts</p>
+                </div>
+                <div class="portfolio-frame"></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="services">
+        <div class="services-container">
+            <div class="services-header reveal">
+                <div class="section-label"><span>Services</span></div>
+                <h2 class="section-title">The <em>Offering</em></h2>
+            </div>
+            <div class="services-grid">
+                <div class="service-item reveal">
+                    <span class="service-number">I</span>
+                    <h3 class="service-title">Creative Direction</h3>
+                    <p class="service-description">End-to-end visual strategy for brands that want to lead, not follow. From concept to execution, every touchpoint aligned.</p>
+                </div>
+                <div class="service-item reveal">
+                    <span class="service-number">II</span>
+                    <h3 class="service-title">Content Production</h3>
+                    <p class="service-description">Photography, film, and motion content crafted to stop the scroll. Cinematic quality meets strategic intent.</p>
+                </div>
+                <div class="service-item reveal">
+                    <span class="service-number">III</span>
+                    <h3 class="service-title">Brand Strategy</h3>
+                    <p class="service-description">Visual identity systems that communicate value before a single word is read. Positioning through aesthetics.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="credentials">
+        <div class="credentials-container">
+            <div class="credentials-content reveal">
+                <div class="section-label"><span>Track Record</span></div>
+                <h2 class="credentials-title">A Decade of Building Iconic Brands</h2>
+                <p class="credentials-text">Working with brands that set the standard in their industries. The numbers reflect relationships built on trust, vision, and results.</p>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-item reveal">
+                    <div class="stat-number">200<sup>M+</sup></div>
+                    <div class="stat-label">Global Impressions</div>
+                </div>
+                <div class="stat-item reveal">
+                    <div class="stat-number">85</div>
+                    <div class="stat-label">Brands Served</div>
+                </div>
+                <div class="stat-item reveal">
+                    <div class="stat-number">12</div>
+                    <div class="stat-label">Years Experience</div>
+                </div>
+                <div class="stat-item reveal">
+                    <div class="stat-number">98<sup>%</sup></div>
+                    <div class="stat-label">Client Retention</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="clients">
+        <div class="clients-container reveal">
+            <p class="clients-label">Trusted by industry leaders</p>
+            <div class="clients-logos">
+                <span class="client-logo">Four Seasons</span>
+                <span class="client-logo">Aman</span>
+                <span class="client-logo">Rosewood</span>
+                <span class="client-logo">Belmond</span>
+                <span class="client-logo">Mandarin Oriental</span>
+                <span class="client-logo">Bvlgari</span>
+                <span class="client-logo">Six Senses</span>
+                <span class="client-logo">Dorchester Collection</span>
+                <span class="client-logo">Armani</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="testimonials">
+        <div class="testimonials-container">
+            <div class="testimonials-header reveal">
+                <div class="section-label"><span>Client Words</span></div>
+            </div>
+            <div class="testimonials-grid">
+                <div class="testimonial-item reveal">
+                    <p class="testimonial-quote">"Andrea is a highly professional influencer and content creator. Besides carefully following our brief, he's always been proactive in creating additional content to capitalize on the latest trends. He delivers high-quality content and has a deep understanding of the platforms he owns."</p>
+                    <div class="testimonial-author">
+                        <span class="author-name">Ilaria Alber-Glanstaetten</span>
+                        <span class="author-title">Senior Director of Communications, Four Seasons Italian Collection</span>
+                    </div>
+                </div>
+                <div class="testimonial-item reveal">
+                    <p class="testimonial-quote">"In a world increasingly filled with generic and artificial content, Andrea stands out for true class and vision. He highlights the fine details of every property with elegance and discretion—never overstating, always capturing its essence. Working with Andrea is a guarantee of quality, refinement, and authenticity."</p>
+                    <div class="testimonial-author">
+                        <span class="author-name">Theodore Daktylidis</span>
+                        <span class="author-title">Managing Director, Mykonos Riviera Hotel & Spa</span>
+                    </div>
+                </div>
+                <div class="testimonial-item reveal">
+                    <p class="testimonial-quote">"Andrea Vetrano is a talented influencer who has made a name for himself by creating engaging content across various social media platforms. His strong and charismatic personality shines through in every post. His creativity and authenticity make him a valuable influencer in the industry."</p>
+                    <div class="testimonial-author">
+                        <span class="author-name">Pierpaolo Tiretti</span>
+                        <span class="author-title">General Manager, Therasia Resort — The Leading Hotels of the World</span>
+                    </div>
+                </div>
+                <div class="testimonial-item reveal">
+                    <p class="testimonial-quote">"I just wanted to share how appreciative we are of all your efforts and AMAZING content. Both property teams mentioned what a pleasure it was to host and welcome you. Hopefully this won't be your last time in Seychelles! Our doors are always open for you."</p>
+                    <div class="testimonial-author">
+                        <span class="author-name">Clare Bromilow</span>
+                        <span class="author-title">Regional Director of PR & Communications, Four Seasons</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="press">
+        <div class="press-container">
+            <div class="press-header reveal">
+                <div class="section-label"><span>As Seen In</span></div>
+            </div>
+            <div class="press-grid">
+                <a href="https://stories.forbestravelguide.com/25-top-hotel-instagram-posts-of-2024" target="_blank" class="press-item reveal">
+                    <span class="press-logo">Forbes Travel Guide</span>
+                    <p class="press-quote">"Top Hotel Instagram Posts of 2024: Equinox Hotel New York — nighttime swim captured by @andreavetrano."</p>
+                </a>
+                <a href="https://travelandleisureitalia.com/oltre-il-lusso-in-viaggio-con-andrea-vetrano/" target="_blank" class="press-item reveal">
+                    <span class="press-logo">Travel + Leisure Italia</span>
+                    <p class="press-quote">"Oltre il lusso. In viaggio con Andrea Vetrano — il dietro le quinte del suo mestiere."</p>
+                </a>
+                <a href="https://www.harpersbazaar.com/it/lifestyle/viaggi/a65251617/hotel-il-sereno-lago-di-como-italia-viaggi/" target="_blank" class="press-item reveal">
+                    <span class="press-logo">Harper's Bazaar</span>
+                    <p class="press-quote">Featured in the Il Sereno, Lake Como story.</p>
+                </a>
+                <a href="https://www.vogue.it/article/taormina-hotel-da-sogno-fashion-caffe-e-angoli-segreti-tutti-da-scoprire" target="_blank" class="press-item reveal">
+                    <span class="press-logo">Vogue Italia</span>
+                    <p class="press-quote">Featured in the Taormina travel story.</p>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="contact" id="contact">
+        <div class="contact-content">
+            <div class="section-label reveal"><span>Connect</span></div>
+            <h2 class="contact-title reveal">Let's Create Something <em>Remarkable</em></h2>
+            <p class="contact-subtitle reveal">I partner with a select number of brands each year. If you're ready to elevate your visual presence, let's talk.</p>
+            
+            <form class="contact-form reveal" id="contactForm" action="https://formspree.io/f/xzdpqojr" method="POST">
+                <div class="form-row">
+                    <div class="form-group">
+                        <input type="text" name="name" id="name" required>
+                        <label for="name">Name</label>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" name="email" id="email" required>
+                        <label for="email">Email</label>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <input type="text" name="company" id="company" required>
+                        <label for="company">Company / Brand</label>
+                    </div>
+                    <div class="form-group">
+                        <select name="budget" id="budget" required>
+                            <option value="" disabled selected></option>
+                            <option value="10k-25k">€10k – €25k</option>
+                            <option value="25k-50k">€25k – €50k</option>
+                            <option value="50k-100k">€50k – €100k</option>
+                            <option value="100k+">€100k+</option>
+                        </select>
+                        <label for="budget">Project Budget</label>
+                    </div>
+                </div>
+                <div class="form-group full">
+                    <textarea name="message" id="message" required></textarea>
+                    <label for="message">Tell me about your project</label>
+                </div>
+                <input type="text" name="_gotcha" style="display:none">
+                <button type="submit" class="btn-submit">
+                    <span>Send Inquiry</span>
+                    <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </button>
+            </form>
+
+            <div class="form-success" id="formSuccess">
+                <h3>Thank You</h3>
+                <p>Your inquiry has been received. I'll be in touch within 48 hours.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-left">© 2025 Andrea Vetrano — All Rights Reserved</div>
+        <div class="footer-right">
+            <a href="https://www.instagram.com/andreavetrano/" target="_blank" class="footer-link">Instagram</a>
+            <a href="https://www.tiktok.com/@andrea.vetrano" target="_blank" class="footer-link">TikTok</a>
+        </div>
+    </footer>
+
+    <div class="lightbox" id="lightbox">
+        <button class="lightbox-close">&times;</button>
+        <div class="lightbox-content">
+            <div class="lightbox-header">
+                <span class="lightbox-title"></span>
+                <span class="lightbox-counter"></span>
+            </div>
+            <div class="lightbox-gallery">
+                <button class="lightbox-arrow lightbox-prev">
+                    <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                </button>
+                <div class="lightbox-image-container">
+                    <img class="lightbox-image" src="" alt="">
+                </div>
+                <button class="lightbox-arrow lightbox-next">
+                    <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </button>
+            </div>
+            <div class="lightbox-thumbnails"></div>
+        </div>
+    </div>
+
+    <script>
+        const cursor = document.querySelector('.cursor');
+        const cursorDot = document.querySelector('.cursor-dot');
+        let mouseX = 0, mouseY = 0, cursorX = 0, cursorY = 0;
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            cursorDot.style.left = mouseX - 2 + 'px';
+            cursorDot.style.top = mouseY - 2 + 'px';
+        });
+
+        function animateCursor() {
+            cursorX += (mouseX - cursorX) * 0.1;
+            cursorY += (mouseY - cursorY) * 0.1;
+            cursor.style.left = cursorX - 10 + 'px';
+            cursor.style.top = cursorY - 10 + 'px';
+            requestAnimationFrame(animateCursor);
+        }
+        animateCursor();
+
+        document.querySelectorAll('a, button, .portfolio-item, .service-item, .press-item, .testimonial-item').forEach(el => {
+            el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+            el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+        });
+
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+
+        const observerOptions = { threshold: 0.15, rootMargin: '0px 0px -80px 0px' };
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach((entry, index) => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => entry.target.classList.add('active'), index * 100);
+                }
+            });
+        }, observerOptions);
+        document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+        const heroContent = document.querySelector('.hero-content');
+        const scrollIndicator = document.querySelector('.scroll-indicator');
+        window.addEventListener('scroll', () => {
+            const scrollY = window.scrollY;
+            const windowHeight = window.innerHeight;
+            if (scrollY < windowHeight) {
+                const opacity = 1 - (scrollY / (windowHeight * 0.6));
+                const translateY = scrollY * 0.4;
+                heroContent.style.opacity = Math.max(0, opacity);
+                heroContent.style.transform = `translateY(${translateY}px)`;
+                scrollIndicator.style.opacity = Math.max(0, 1 - (scrollY / 200));
+            }
+        });
+
+        const heroVideo = document.querySelector('.hero-video');
+        if (heroVideo) heroVideo.addEventListener('error', () => heroVideo.style.display = 'none');
+
+        // Lightbox Gallery
+        const portfolioData = {
+            'Aston Martin': {
+                images: ['/assets/work-01.jpg', '/assets/work-01-b.jpg', '/assets/work-01-c.jpg', '/assets/work-01-d.jpg']
+            },
+            'Palazzo Avino': {
+                images: ['/assets/work-02.jpg', '/assets/work-02-b.jpg', '/assets/work-02-c.jpg', '/assets/work-02-d.jpg']
+            },
+            'Bvlgari': {
+                images: ['/assets/work-03.jpg', '/assets/work-03-b.jpg', '/assets/work-03-c.jpg', '/assets/work-03-d.jpg']
+            },
+            'Aman': {
+                images: ['/assets/work-04.jpg', '/assets/work-04-b.jpg', '/assets/work-04-c.jpg', '/assets/work-04-d.jpg']
+            }
+        };
+
+        const lightbox = document.getElementById('lightbox');
+        const lightboxTitle = lightbox.querySelector('.lightbox-title');
+        const lightboxCounter = lightbox.querySelector('.lightbox-counter');
+        const lightboxImage = lightbox.querySelector('.lightbox-image');
+        const lightboxThumbnails = lightbox.querySelector('.lightbox-thumbnails');
+        const lightboxPrev = lightbox.querySelector('.lightbox-prev');
+        const lightboxNext = lightbox.querySelector('.lightbox-next');
+        const lightboxClose = lightbox.querySelector('.lightbox-close');
+
+        let currentProject = null;
+        let currentIndex = 0;
+
+        function openLightbox(projectName) {
+            currentProject = portfolioData[projectName];
+            currentIndex = 0;
+            
+            lightboxTitle.textContent = projectName;
+            lightboxThumbnails.innerHTML = '';
+            
+            currentProject.images.forEach((src, index) => {
+                const thumb = document.createElement('img');
+                thumb.src = src;
+                thumb.className = 'lightbox-thumb' + (index === 0 ? ' active' : '');
+                thumb.addEventListener('click', () => goToSlide(index));
+                lightboxThumbnails.appendChild(thumb);
+            });
+            
+            updateLightbox();
+            lightbox.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox() {
+            lightbox.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function updateLightbox() {
+            lightboxImage.classList.remove('loaded');
+            lightboxImage.src = currentProject.images[currentIndex];
+            lightboxImage.onload = () => lightboxImage.classList.add('loaded');
+            lightboxCounter.textContent = `${currentIndex + 1} / ${currentProject.images.length}`;
+            
+            lightboxThumbnails.querySelectorAll('.lightbox-thumb').forEach((thumb, index) => {
+                thumb.classList.toggle('active', index === currentIndex);
+            });
+        }
+
+        function goToSlide(index) {
+            currentIndex = index;
+            updateLightbox();
+        }
+
+        function nextSlide() {
+            currentIndex = (currentIndex + 1) % currentProject.images.length;
+            updateLightbox();
+        }
+
+        function prevSlide() {
+            currentIndex = (currentIndex - 1 + currentProject.images.length) % currentProject.images.length;
+            updateLightbox();
+        }
+
+        document.querySelectorAll('.portfolio-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const projectName = item.querySelector('.portfolio-name').textContent;
+                openLightbox(projectName);
+            });
+        });
+
+        lightboxClose.addEventListener('click', closeLightbox);
+        lightboxNext.addEventListener('click', nextSlide);
+        lightboxPrev.addEventListener('click', prevSlide);
+
+        lightbox.addEventListener('click', (e) => {
+            if (e.target === lightbox) closeLightbox();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (!lightbox.classList.contains('active')) return;
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowRight') nextSlide();
+            if (e.key === 'ArrowLeft') prevSlide();
+        });
+
+        const form = document.getElementById('contactForm');
+        const formSuccess = document.getElementById('formSuccess');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+            
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'Accept': 'application/json' }
+                });
+                
+                if (response.ok) {
+                    form.style.display = 'none';
+                    formSuccess.classList.add('show');
+                }
+            } catch (error) {
+                console.error('Form error:', error);
+            }
+        });
+    </script>
+</body>
+</html>
